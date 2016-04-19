@@ -1,0 +1,448 @@
+
+Filed on GitHub as:
+
+  https://github.com/proftpd/proftpd/issues/254
+
+Use Cases/Audiences
+
+  Sysadmins reading the ProFTPD syslog/SystemLog, diagnosing server (and user!)
+  issues.
+
+  Users (via FTP clients!) using the server, diagnosing their own issues/
+  problems (failed to upload, failed login, failed to list directories,
+  failed to download).
+
+
+Theory:
+
+  "In English, the stuff to the left of 'because' is a statement of the
+   problem, including function name and function argument names/values."
+
+
+  Short version (used by libexplain):
+
+    <system call + args> " failed: <strerror text + name/number of errno>
+
+      "open(pathname = "foo/bar", flags = O_RDONLY) failed: No such file or directory (ENOENT [2])"
+
+  Longer version (used by libexplain):
+
+    <system call + args> "failed with " <strerror text + name/number of errno> " because " <explanation>
+
+      "open(pathname = "foo/bar", flags = O_RDONLY) failed with "No such file or directory (ENOENT [2])" because there is no 'bar' file in the pathname 'foo' directory"
+
+  I'm thinking to include the goal as well:
+
+    "tried to ${goal} but ${task} using ${args} failed with ${error} because ${explanation}"
+
+  Context:
+  Problem:
+  Solution:
+
+  OR
+
+  Who:
+    UID/user name
+    GID/group name
+    PID
+    Remote IP address/DNS name
+
+  What:
+    Direct object:
+      file/path
+      socket/address/port
+
+    What about crypto?  SSL/TLS?
+
+  Where:
+    Module
+    File
+    Line
+
+  When:
+    ms timestamp
+
+  Why:
+
+
+Common Problems:
+
+  DNS resolution failure for <VirtualHost>, DefaultAddress, MasqueradeAddress
+  Data transfer timeout (firewall/NAT/router settings, esp for FTPS)
+  Can't create ScoreboardFile, PidFile, *Log:
+    Permissions, no such directory
+
+  
+API:
+
+  include/error.h
+
+    /* Make sure this object is opaque! */
+    typedef struct err_rec pr_error_t;
+
+  struct err_rec {
+    pool *pool;
+
+    /* Actual errno value, or -1 if unknown */
+    int err_errno;
+
+    /* String of errno name, e.g. "EINVAL" */
+    const char *err_name;
+
+    /* strerror(3) value, or null if unknown */
+    const char *err_text;
+
+    /* Module where error occurred, if relevant */
+    module *err_module;
+
+    /* File location of the error, e.g. __FILE__ */
+    const char *err_file;
+
+    /* Line location of the error, e.g. __LINE__ */
+    unsigned int err_lineno;
+
+    /* Human readable explanation components, for constructing:
+     *
+     *  who
+     *    "user ${user} (UID ${uid}), group ${group} (GID ${gid} via ${protocol}"
+     *
+     *    we get client IP address "for free" from pr_log_X().
+     *
+     *  if goal (why)
+     *    "${goal}"
+     *
+     *  if location (where)
+     *    "at ${location}"
+     *
+     *  "[but] ${operation}" (what)
+     *
+     *  if operation args
+     *    "using ${args}"
+     *
+     *  "failed with ${error}"
+     *
+     *  if explanation (solution)
+     *    "because ${explanation}"
+     *
+     * "${who} wanted to ${goal} at ${location} but ${operation} using ${args} failed with "${error}" because ${explanation}"
+     *
+     * as the full/detailed explanation, or, for the terse version:
+     *
+     *  ${operation} using ${args} failed with "${error}"
+     *
+     * Where `error` is:
+     *
+     *  "${err_text} (${err_name} [${err_errno}])"
+     *
+     * DETAILED format, without explanation:
+     *
+     *  tried to ${goal} at ${location} but ${operation} failed with "${error}"
+     *
+     * and without goal or location:
+     *
+     *  ${operation} failed with "${error}"
+     */
+
+    const char *err_goal;
+    const char *err_oper;
+    const char *err_oper_args;
+    const char *err_explanation;
+  };
+
+
+  pr_error_t *pr_error_create(pool *p, int err_errno);
+  void pr_error_destroy(pr_error_t *err);
+
+  int pr_error_explain_XXX(pr_error_t *err, ...);
+    This is where the Error API would call out to pluggable 'explanations'
+    callbacks, per XXX function.
+
+  functions:
+    accept
+    access
+    bind
+    chdir
+    chmod
+    chown
+    chroot
+    close
+    closedir
+    connect
+    dup
+    dup2
+    fchmod
+    fchown
+    fclose
+    fcntl
+    fdopen
+    flock
+    fopen
+    fork
+    fpathconf
+    fstat
+    fstatfs
+    fstatvfs
+    fsync
+    ftruncate
+    futimes
+    getaddrinfo
+    getcwd
+    getgrent
+    getgrouplist
+    getgroups
+    gethostbyname
+    gethostbyname2
+    gethostname
+    getnameinfo
+    getpeername
+    getrlimit
+    getsockname
+    getsockopt
+    gettimeofday
+    gmtime
+    lchmod
+    lchown
+    link
+    listen
+    localtime
+    lseek 
+    lstat
+    lutimes
+    mkdir
+    mkdtemp
+    mkstemp
+    mmap
+    munmap
+    nice
+    open
+    opendir
+    pathconf
+    pipe
+    putenv
+    raise
+    read
+    readdir
+    readlink
+    readv
+    rename
+    rmdir
+    select
+    setenv
+    setgid
+    setpriority
+    setregid
+    setresgid
+    setresuid
+    setreuid
+    setrlimit
+    setsockopt
+    setuid
+    shmat
+    shmctl
+    sleep
+    socket
+    stat
+    statfs
+    statvfs
+    strcoll
+    strtod
+    strtof
+    strtol
+    strtoll
+    strtoul
+    symlink
+    time
+    truncate
+    unlink
+    utimes
+    wait
+    waitpid
+    write
+    writev
+
+    *xattr
+
+    snprintf
+    sprintf
+    vnprintf
+    vsnprintf
+ 
+  int pr_error_set_goal(pr_error_t *err, const char *goal);
+
+  int pr_error_set_location(pr_error_t *err, module *m, const char *file,
+    int lineno);
+  const char *pr_error_strerror(pr_error_t *err, int format);
+    PR_ERROR_FORMAT_DETAILED (for logs)
+    PR_ERROR_FORMAT_TERSE (for clients: "${operation} failed with "${error}" because ${explanation}")
+      How to enable/disable this flag via module, even if calling code
+      requests it?
+
+      int pr_error_use_formats(int format_flags);
+        PR_ERRR_FORMAT_USE_DETAILED
+        PR_ERRR_FORMAT_USE_TERSE
+        PR_ERRR_FORMAT_USE_MINIMAL
+
+      int pr_error_use_details(int detail_flags);
+        PR_ERROR_DETAILS_USE_USER
+        PR_ERROR_DETAILS_USE_UID
+        PR_ERROR_DETAILS_USE_GROUP
+        PR_ERROR_DETAILS_USE_GID
+        PR_ERROR_DETAILS_USE_PROTOCOL
+        PR_ERROR_DETAILS_USE_MODULE
+        PR_ERROR_DETAILS_USE_FILE
+        PR_ERROR_DETAILS_USE_LINENO
+
+    PR_ERROR_FORMAT_MINIMAL (for clients: just strerror(3) text)
+
+  Error-enhanced FSIO API.  Example:
+
+    pr_fh_t *pr_fsio_open(const char *path, int flags);
+
+    pr_fh_t *pr_fsio_open_with_error(pool *p, const char *path, int flags,
+      pr_error_t **err);
+
+  Providing NULL pool, or NULL err pointer, means no error.
+
+  Then, on failure, the caller would set its calling location:
+
+    pr_error_set_location(err, &xfer_module, __FILE__, __LINE__-1);
+      If err is NULL, does nothing (void func; does NOT change errno!).
+
+    pr_error_set_goal(err, ...);
+      If err is NULL, does nothing (void func; does NOT change errno!).
+
+      Example:
+        pr_error_set_goal(err, "${protocol} file upload for user ${user}");
+
+      Think about what details the admin would want _after the fact_: who
+      was it, when, what protocol, what action was the user taking, etc.
+
+    pr_error_strerror(err, 0);
+      If err is NULL, simply returns strerror(errno).
+
+    pr_error_destroy(err);
+      If err is NULL, does nothing.
+
+
+Implementation:
+
+  Use now-standard API/SPI approach, so that modules can provide their
+  own functionality.  (I'm thinking mod_explain, and a way for admins to
+  produce smaller binaries by omitting the module, as they need.)
+
+  Ideally this new API would, initially (and by default) produce error
+  strings/log messages that are much like the existing log messages.
+
+  Going forward, the "presenting" of errors using a more detailed/informative
+  format, e.g:
+
+    Context: Reading file for Foo
+    Problem: (akin to libexplain strings)
+    Solution: advice
+
+  Would be very nice.  Hard to do that in a SINGLE line of log text, though.
+
+Tasks
+
+  First, create the Error API, and start using it in the core API/modules.
+  It should produce the same log messages as currently used, making it
+  a transparent change.  This will also have the benefit of determining
+  just which system calls, libc functions, etc need to be covered initially.
+
+  Next, implement the SPI portion of the API, for module use.
+
+    struct err_explain_rec {
+      const char *(*explain_open)(pr_error_t *err, const char *path, int flags,
+        mode_t mode);
+      ...
+    }
+
+    typedef err_explain_rec pr_error_explanations_t;
+
+    int pr_error_register_explanations(module *m, const char *name,
+      pr_error_explanations *);
+    int pr_error_unregister_explanations(module *m, const char *name);
+
+  Last, hook in mod_explain.  The above API would allow a drop-in usage of
+  libexplain...if it actually compiled on Mac.  Sigh.
+
+
+libexplain:
+
+  For the bulk of the work, see:
+
+    libexplain/buffer/errno/*.c
+
+  The thread starts with something like:
+
+    libexplain/rename.c ->
+      libexplain/errno/rename.c ->
+        libexplain/message/errno/rename.c ->
+          libexplain/buffer/errno/rename.c
+
+  The libexplain/explanation.h header is where the "assembly" happens:
+  turning the explanation model object into a view (e.g. a string/message).
+
+    void explain_explanation_assemble(...)
+
+  For implementation, see:
+
+     libexplain/explanation/assemble*.c
+
+  Should the Errors API use "assemble", "render", "present", "build", or maybe
+  just "fmt" (for "format"), for turning the pr_error_t model into a format
+  for presenting to the intended audience (log, client, etc)?
+
+  Consider also the _layout_ of the presentation!  A layout which works well
+  for some log messages may/will not work for other cases (e.g. Java's log4j
+  PatternLayout class/model).
+
+Module Thoughts
+
+  Directives
+
+    ExplainEngine on|off
+    ExplainTable /path/to/explanations.json
+
+  What if the strings used by mod_explain were externalized, but not (yet)
+  in po/pot format?  What if, instead, they were a .json file?  This would
+  reduce the size of the executable, at the cost of runtime memory.  Plus
+  it would actually be easy to localize (given the right abstracting
+  interface).
+
+  [ { "rename": [
+        { "errno": "EINVAL", "text": "..." },
+        { "errno": "EXDEV", "text": "..." },
+      ],
+    },
+  }
+   
+
+Other:
+
+  xattr support for mod_mime
+    read the MIME type from xattr; see lighttpd, Apache mod_mime_xattr
+  xattr support for mod_digest
+    read MD5 xattr?
+  xattr support in mod_ls
+    LIST output format with '@' symbol, and supporting options (-@).
+  xattr support in mod_facts
+    What about MLSD facts?  (Would need to provide a new fact,
+    e.g. UNIX.xattr.NAME=hexval, one per xattr?)
+
+  FSOptions IgnoreExtendedAttributes (for e.g. buggy clients, for both mod_sftp
+    and core)
+
+  Update Commands howto with HASH (assuming mod_digest)
+
+  SITE XATTR commands:
+    GETXATTR
+    SETXATTR
+    LSXATTR
+    RMXATTR
+
+    attribute name as string, attribute value as hex-encoded (lc)
+
+    Format for LISTXATTR response?
+
+    What about symlinks?  (i.e. use l*xattr() functions on paths, or not?)
