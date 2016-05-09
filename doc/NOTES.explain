@@ -112,7 +112,7 @@ API:
      *    "${goal}"
      *
      *  if location (where)
-     *    "at ${location}"
+     *    "in ${location}"
      *
      *  "[but] ${operation}" (what)
      *
@@ -124,7 +124,7 @@ API:
      *  if explanation (solution)
      *    "because ${explanation}"
      *
-     * "${who} wanted to ${goal} at ${location} but ${operation} using ${args} failed with "${error}" because ${explanation}"
+     * "${who} wanted to ${goal} in ${location} but ${operation} using ${args} failed with "${error}" because ${explanation}"
      *
      * as the full/detailed explanation, or, for the terse version:
      *
@@ -136,7 +136,7 @@ API:
      *
      * DETAILED format, without explanation:
      *
-     *  tried to ${goal} at ${location} but ${operation} failed with "${error}"
+     *  tried to ${goal} in ${location} but ${operation} failed with "${error}"
      *
      * and without goal or location:
      *
@@ -159,7 +159,6 @@ API:
 
   functions:
     accept
-    access
     bind
     chdir
     chmod
@@ -168,8 +167,6 @@ API:
     close
     closedir
     connect
-    dup
-    dup2
     fchmod
     fchown
     fclose
@@ -178,7 +175,6 @@ API:
     flock
     fopen
     fork
-    fpathconf
     fstat
     fstatfs
     fstatvfs
@@ -187,9 +183,6 @@ API:
     futimes
     getaddrinfo
     getcwd
-    getgrent
-    getgrouplist
-    getgroups
     gethostbyname
     gethostbyname2
     gethostname
@@ -198,36 +191,31 @@ API:
     getrlimit
     getsockname
     getsockopt
-    gettimeofday
-    gmtime
-    lchmod
     lchown
     link
     listen
-    localtime
     lseek 
     lstat
     lutimes
     mkdir
     mkdtemp
     mkstemp
-    mmap
-    munmap
-    nice
     open
+      Notes:
+        ENOSPC:
+          use statfs(2)/statvfs(2) on the mountpoint to see if the filesystem
+          is out of blocks (f_blocks/f_bfree), OR out of inodes
+          (f_files/f_ffree).
+
     opendir
-    pathconf
-    pipe
-    putenv
-    raise
     read
     readdir
     readlink
     readv
     rename
     rmdir
-    select
-    setenv
+    setegid
+    seteuid
     setgid
     setpriority
     setregid
@@ -237,36 +225,30 @@ API:
     setrlimit
     setsockopt
     setuid
-    shmat
-    shmctl
-    sleep
     socket
     stat
     statfs
     statvfs
-    strcoll
-    strtod
-    strtof
-    strtol
-    strtoll
-    strtoul
     symlink
-    time
     truncate
     unlink
     utimes
-    wait
-    waitpid
     write
     writev
 
-    *xattr
+    getxattr
+    fgetxattr
+    lgetxattr
+    listxattr
+    flistxattr
+    llistxattr
+    removexattr
+    fremovexattr
+    lremovexattr
+    setxattr
+    fsetxattr
+    lsetxattr
 
-    snprintf
-    sprintf
-    vnprintf
-    vsnprintf
- 
   int pr_error_set_goal(pr_error_t *err, const char *goal);
 
   int pr_error_set_location(pr_error_t *err, module *m, const char *file,
@@ -366,6 +348,71 @@ Tasks
   Last, hook in mod_explain.  The above API would allow a drop-in usage of
   libexplain...if it actually compiled on Mac.  Sigh.
 
+
+  In mod_explain, register an event listener for chroot.  IF it happens,
+  do a pre-emptive statfs/statvfs.  Why?  That can be used to determine
+  number of used/max blocks/inodes, for better error reporting.  I'm not
+  sure that statfs/statvfs work when chrooted.
+
+  Always try to make sure the messages are ACTIONABLE.  And have a way to
+  turn them off.  Maybe MINIMAL means:
+
+    goal (if present, otherwise oper) + error text
+
+
+  MAKE SURE pr_error_set_goal() calls are SETTING a good context/goal!
+
+  https://utcc.utoronto.ca/~cks/space/blog/tech/HumanErrorNotRootCause
+
+  https://utcc.utoronto.ca/~cks/space/blog/tech/PeopleAndIgnorance
+  https://utcc.utoronto.ca/~cks/space/blog/tech/PeopleForgetExceptions
+
+  https://utcc.utoronto.ca/~cks/space/blog/tech/UsersAreRight
+  https://utcc.utoronto.ca/~cks/space/blog/tech/UsersDontCareAboutSecurity
+  https://utcc.utoronto.ca/~cks/space/blog/tech/UsersAreRational
+
+  https://utcc.utoronto.ca/~cks/space/blog/sysadmin/LogAllAuthentication
+  https://utcc.utoronto.ca/~cks/space/blog/sysadmin/LoggingUsernamesMistake
+  https://utcc.utoronto.ca/~cks/space/blog/sysadmin/OnLoggingBadLogins
+  https://utcc.utoronto.ca/~cks/space/blog/sysadmin/WhenLogBadUsernames
+
+  Gotchas:
+    https://utcc.utoronto.ca/~cks/space/blog/sysadmin/ContextInErrorMessages
+    https://utcc.utoronto.ca/~cks/space/blog/unix/StandardUnixErrorFormat
+    http://linux.die.net/man/3/error
+    https://utcc.utoronto.ca/~cks/space/blog/programming/OnLogMessageFormats
+    https://utcc.utoronto.ca/~cks/space/blog/sysadmin/LogMessageMistake
+    https://utcc.utoronto.ca/~cks/space/blog/sysadmin/UsefulErrorMessages
+    https://utcc.utoronto.ca/~cks/space/blog/sysadmin/ImportantLogMessageNote
+    https://utcc.utoronto.ca/~cks/space/blog/programming/ErrorMessagePrinciple
+    https://utcc.utoronto.ca/~cks/space/blog/programming/ActionableMessages
+    https://utcc.utoronto.ca/~cks/space/blog/programming/DontBreakUpMessages
+    https://utcc.utoronto.ca/~cks/space/blog/programming/OnStructuredLogging
+    https://utcc.utoronto.ca/~cks/space/blog/programming/ExceptionHandlingAggregation
+    https://utcc.utoronto.ca/~cks/space/blog/sysadmin/NotLoggingThings
+
+  See:
+    https://utcc.utoronto.ca/~cks/space/blog/programming/SyslogVsStderr
+    For the above reason, address Bug#XXX via LogOptions No...
+
+  Features:
+    Include stacktrace in pr_error_t, at construction time -- but only if
+    enabled via DETAILS_USE_STACKTRACE (not ON by default).
+
+    Create LogFormat variable for logging an error, AND for associating an
+    error with a command, e.g. pr_cmd_set_error(), akin to pr_cmd_set_errno().
+    NO stacktraces with LogFormat logged errors, though!
+
+    Tie errors into mod_snmp, via events.  Have SNMP tables/OIDs for specific
+    operations/errors?  (Think ENOSPC, etc.)
+      https://utcc.utoronto.ca/~cks/space/blog/sysadmin/DiagnosticsImportance
+
+    Explain OpenSSL errors!
+      https://utcc.utoronto.ca/~cks/space/blog/tech/GoodCryptoErrorMessages
+
+  Things to get/cache at chroot time:
+    statfs/statvfs
+    loop max
 
 libexplain:
 
