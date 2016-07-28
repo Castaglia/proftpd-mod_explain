@@ -186,10 +186,11 @@ MODRET set_explainoptions(cmd_rec *cmd) {
 static void explain_mod_unload_ev(const void *event_data, void *user_data) {
   if (strcmp((const char *) event_data, "mod_explain.c") == 0) {
     /* Unregister ourselves from all events. */
-    pr_event_unregister(&sftp_module, NULL, NULL);
+    pr_event_unregister(&explain_module, NULL, NULL);
 
     /* Remove our explanations. */
-    (void) pr_error_unregister(explain_pool, &explain_module, "explain");
+    (void) pr_error_unregister_explanations(explain_pool, &explain_module,
+      "explain");
 
     destroy_pool(explain_pool);
     explain_pool = NULL;
