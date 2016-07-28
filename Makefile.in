@@ -17,7 +17,7 @@ MODULE_OBJS=mod_explain.o \
   path.o \
   chroot.o
 
-SHARED_MODULE_OBJS=mod_proxy.lo \
+SHARED_MODULE_OBJS=mod_explain.lo \
   generic.lo \
   platform.lo \
   path.lo \
