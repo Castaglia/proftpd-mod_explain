@@ -17,7 +17,7 @@ MODULE_OBJS=mod_explain.o \
   path.o \
   chroot.o
 
-SHARED_MODULE_OBJS=mod_proxy.lo \
+SHARED_MODULE_OBJS=mod_explain.lo \
   generic.lo \
   platform.lo \
   path.lo \
@@ -50,5 +50,9 @@ clean:
 	$(LIBTOOL) --mode=clean $(RM) $(MODULE_NAME).a $(MODULE_NAME).la *.o *.lo .libs/*.o
 
 dist: clean
-	$(RM) Makefile $(MODULE_NAME).h *.gcda *.gcno config.status config.cache config.log
+	$(RM) Makefile $(MODULE_NAME).h *.gcda *.gcno config.status config.cache config.log *.gcda *.gcno
 	-$(RM) -r .libs/ .git/ CVS/ RCS/
+
+# Run the API unit tests
+check:
+	test -z "$(ENABLE_TESTS)" || (cd t/ && $(MAKE) api-tests)
