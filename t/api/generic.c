@@ -80,6 +80,132 @@ START_TEST (generic_describe_generic_eagain_test) {
 }
 END_TEST
 
+START_TEST (generic_describe_generic_emfile_test) {
+#ifdef EMFILE
+  const char *desc, *syscall, *expected;
+  int xerrno;
+
+  syscall = "write(2)";
+  xerrno = EMFILE;
+  desc = explain_describe_generic(p, xerrno, syscall);
+  fail_unless(desc != NULL, "Failed to describe %s errno %d: %s", syscall,
+    xerrno, strerror(errno));
+
+  expected = "the process already has the maximum number of file descriptors open";
+  fail_unless(strcmp(desc, expected) == 0,
+    "Expected '%s', got '%s'", expected, desc);
+#endif /* EMFILE */
+}
+END_TEST
+
+START_TEST (generic_describe_generic_enfile_test) {
+#ifdef ENFILE
+  const char *desc, *syscall, *expected;
+  int xerrno;
+
+  syscall = "write(2)";
+  xerrno = ENFILE;
+  desc = explain_describe_generic(p, xerrno, syscall);
+  fail_unless(desc != NULL, "Failed to describe %s errno %d: %s", syscall,
+    xerrno, strerror(errno));
+
+  expected = "the system limit on the total number of open files has been reached";
+  fail_unless(strcmp(desc, expected) == 0,
+    "Expected '%s', got '%s'", expected, desc);
+#endif /* ENFILE */
+}
+END_TEST
+
+START_TEST (generic_describe_generic_eintr_test) {
+#ifdef EINTR
+  const char *desc, *syscall, *expected;
+  int xerrno;
+
+  syscall = "write(2)";
+  xerrno = EINTR;
+  desc = explain_describe_generic(p, xerrno, syscall);
+  fail_unless(desc != NULL, "Failed to describe %s errno %d: %s", syscall,
+    xerrno, strerror(errno));
+
+  expected = "the write(2) system call was interrupted by a signal before it could finish";
+  fail_unless(strcmp(desc, expected) == 0,
+    "Expected '%s', got '%s'", expected, desc);
+#endif /* EINTR */
+}
+END_TEST
+
+START_TEST (generic_describe_generic_efault_test) {
+#ifdef EFAULT
+  const char *desc, *syscall, *expected;
+  int xerrno;
+
+  syscall = "write(2)";
+  xerrno = EFAULT;
+  desc = explain_describe_generic(p, xerrno, syscall);
+  fail_unless(desc != NULL, "Failed to describe %s errno %d: %s", syscall,
+    xerrno, strerror(errno));
+
+  expected = "one of the write(2) parameters is null, uninitialized, or points to invalid/unreachable memory";
+  fail_unless(strcmp(desc, expected) == 0,
+    "Expected '%s', got '%s'", expected, desc);
+#endif /* EFAULT */
+}
+END_TEST
+
+START_TEST (generic_describe_generic_eio_test) {
+#ifdef EIO
+  const char *desc, *syscall, *expected;
+  int xerrno;
+
+  syscall = "write(2)";
+  xerrno = EIO;
+  desc = explain_describe_generic(p, xerrno, syscall);
+  fail_unless(desc != NULL, "Failed to describe %s errno %d: %s", syscall,
+    xerrno, strerror(errno));
+
+  expected = "a low-level I/O error occurred, probably in hardware";
+  fail_unless(strcmp(desc, expected) == 0,
+    "Expected '%s', got '%s'", expected, desc);
+#endif /* EIO */
+}
+END_TEST
+
+START_TEST (generic_describe_generic_enomem_test) {
+#ifdef ENOMEM
+  const char *desc, *syscall, *expected;
+  int xerrno;
+
+  syscall = "write(2)";
+  xerrno = ENOMEM;
+  desc = explain_describe_generic(p, xerrno, syscall);
+  fail_unless(desc != NULL, "Failed to describe %s errno %d: %s", syscall,
+    xerrno, strerror(errno));
+
+  expected = "there was not enough user-space memory available for write(2) to succeed";
+  fail_unless(strcmp(desc, expected) == 0,
+    "Expected '%s', got '%s'", expected, desc);
+#endif /* ENOMEM */
+}
+END_TEST
+
+START_TEST (generic_describe_generic_eperm_test) {
+#ifdef EPERM
+  const char *desc, *syscall, *expected;
+  int xerrno;
+
+  syscall = "write(2)";
+  xerrno = EPERM;
+  desc = explain_describe_generic(p, xerrno, syscall);
+  fail_unless(desc != NULL, "Failed to describe %s errno %d: %s", syscall,
+    xerrno, strerror(errno));
+
+  expected = "the process does not have the appropriate privileges to use the write(2) system call";
+  fail_unless(strcmp(desc, expected) == 0,
+    "Expected '%s', got '%s'", expected, desc);
+#endif /* EPERM */
+}
+END_TEST
+
 START_TEST (generic_describe_generic_default_test) {
   const char *desc, *syscall, *expected;
   int xerrno;
@@ -107,7 +233,6 @@ Suite *tests_get_generic_suite(void) {
 
   tcase_add_test(testcase, generic_describe_generic_params_test);
   tcase_add_test(testcase, generic_describe_generic_eagain_test);
-#if 0
   tcase_add_test(testcase, generic_describe_generic_emfile_test);
   tcase_add_test(testcase, generic_describe_generic_enfile_test);
   tcase_add_test(testcase, generic_describe_generic_eintr_test);
@@ -115,7 +240,6 @@ Suite *tests_get_generic_suite(void) {
   tcase_add_test(testcase, generic_describe_generic_eio_test);
   tcase_add_test(testcase, generic_describe_generic_enomem_test);
   tcase_add_test(testcase, generic_describe_generic_eperm_test);
-#endif
   tcase_add_test(testcase, generic_describe_generic_default_test);
 
   suite_add_tcase(suite, testcase);

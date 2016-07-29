@@ -83,8 +83,7 @@ static const char *describe_efault(pool *p, const char *syscall) {
 #if defined(EIO)
 static const char *describe_eio(pool *p, const char *syscall) {
   (void) syscall;
-  return pstrdup(p,
-    "a low-level filesystem I/O error occurred, probably in hardware");
+  return pstrdup(p, "a low-level I/O error occurred, probably in hardware");
 }
 #endif /* EIO */
 
@@ -97,6 +96,10 @@ static const char *describe_enomem(pool *p, const char *syscall) {
 
 #if defined(EPERM)
 static const char *describe_eperm(pool *p, const char *syscall) {
+  /* Note: this error message is more appropriate for EACCES, it's true.
+   * May need to consider changing this text to be more appropos in the future.
+   */
+
   return pstrcat(p,
     "the process does not have the appropriate privileges to use the ",
     syscall, " system call", NULL);
