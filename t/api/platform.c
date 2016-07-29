@@ -65,8 +65,15 @@ END_TEST
 
 START_TEST (platform_name_max_test) {
   long res;
+  const char *path;
 
-  res = explain_platform_name_max(p);
+  res = explain_platform_name_max(p, NULL);
+  fail_unless(res < 0, "Failed to handle null path");
+  fail_unless(errno == EINVAL, "Expected EINVAL (%d), got %s (%d)", EINVAL,
+    strerror(errno), errno);
+
+  path = "/tmp";
+  res = explain_platform_name_max(p, path);
   if (res < 0) {
     fail_unless(errno == ENOSYS, "Expected ENOSYS (%d), got %s (%d)", ENOSYS,
       strerror(errno), errno);
@@ -76,8 +83,15 @@ END_TEST
 
 START_TEST (platform_no_trunc_test) {
   long res;
+  const char *path;
 
-  res = explain_platform_no_trunc(p);
+  res = explain_platform_no_trunc(p, NULL);
+  fail_unless(res < 0, "Failed to handle null path");
+  fail_unless(errno == EINVAL, "Expected EINVAL (%d), got %s (%d)", EINVAL,
+    strerror(errno), errno);
+
+  path = "/tmp";
+  res = explain_platform_no_trunc(p, path);
   if (res < 0) {
     fail_unless(errno == ENOSYS, "Expected ENOSYS (%d), got %s (%d)", ENOSYS,
       strerror(errno), errno);
@@ -87,8 +101,15 @@ END_TEST
 
 START_TEST (platform_path_max_test) {
   long res;
+  const char *path;
 
-  res = explain_platform_path_max(p);
+  res = explain_platform_path_max(p, NULL);
+  fail_unless(res < 0, "Failed to handle null path");
+  fail_unless(errno == EINVAL, "Expected EINVAL (%d), got %s (%d)", EINVAL,
+    strerror(errno), errno);
+
+  path = "/tmp";
+  res = explain_platform_path_max(p, path);
   if (res < 0) {
     fail_unless(errno == ENOSYS, "Expected ENOSYS (%d), got %s (%d)", ENOSYS,
       strerror(errno), errno);

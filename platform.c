@@ -56,6 +56,11 @@ long explain_platform_name_max(pool *p, const char *path) {
 #if defined(HAVE_PATHCONF)
   (void) p;
 
+  if (path == NULL) {
+    errno = EINVAL;
+    return -1;
+  }
+
   if (platform_sess_name_max > 0) {
     return platform_sess_name_max;
   }
@@ -71,6 +76,11 @@ long explain_platform_no_trunc(pool *p, const char *path) {
 #if defined(HAVE_PATHCONF)
   (void) p;
 
+  if (path == NULL) {
+    errno = EINVAL;
+    return -1;
+  }
+
   if (platform_sess_no_trunc > 0) {
     return platform_sess_no_trunc;
   }
@@ -85,6 +95,11 @@ long explain_platform_no_trunc(pool *p, const char *path) {
 long explain_platform_path_max(pool *p, const char *path) {
 #if defined(HAVE_PATHCONF)
   (void) p;
+
+  if (path == NULL) {
+    errno = EINVAL;
+    return -1;
+  }
 
   if (platform_sess_path_max > 0) {
     return platform_sess_path_max;
