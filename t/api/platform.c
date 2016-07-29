@@ -32,13 +32,9 @@ static void set_up(void) {
   if (p == NULL) {
     p = make_sub_pool(NULL);
   }
-
-  explain_platform_init(p);
 }
 
 static void tear_down(void) {
-  explain_platform_free(p);
-
   if (p) {
     destroy_pool(p);
     p = NULL;
@@ -48,24 +44,34 @@ static void tear_down(void) {
 START_TEST (platform_child_max_test) {
   long res, expected;
 
+  explain_platform_init(p);
+
   expected = sysconf(_SC_CHILD_MAX);
   res = explain_platform_child_max(p);
   fail_unless(res == expected, "Expected %ld, got %ld", expected, res);
+
+  explain_platform_free(p);
 }
 END_TEST
 
 START_TEST (platform_iov_max_test) {
   long res, expected;
 
+  explain_platform_init(p);
+
   expected = sysconf(_SC_IOV_MAX);
   res = explain_platform_iov_max(p);
   fail_unless(res == expected, "Expected %ld, got %ld", expected, res);
+
+  explain_platform_free(p);
 }
 END_TEST
 
 START_TEST (platform_name_max_test) {
   long res;
   const char *path;
+
+  explain_platform_init(p);
 
   res = explain_platform_name_max(p, NULL);
   fail_unless(res < 0, "Failed to handle null path");
@@ -78,12 +84,24 @@ START_TEST (platform_name_max_test) {
     fail_unless(errno == ENOSYS, "Expected ENOSYS (%d), got %s (%d)", ENOSYS,
       strerror(errno), errno);
   }
+
+  pr_event_generate("core.chroot", path);
+
+  res = explain_platform_name_max(p, path);
+  if (res < 0) {
+    fail_unless(errno == ENOSYS, "Expected ENOSYS (%d), got %s (%d)", ENOSYS,
+      strerror(errno), errno);
+  }
+
+  explain_platform_free(p);
 }
 END_TEST
 
 START_TEST (platform_no_trunc_test) {
   long res;
   const char *path;
+
+  explain_platform_init(p);
 
   res = explain_platform_no_trunc(p, NULL);
   fail_unless(res < 0, "Failed to handle null path");
@@ -96,12 +114,24 @@ START_TEST (platform_no_trunc_test) {
     fail_unless(errno == ENOSYS, "Expected ENOSYS (%d), got %s (%d)", ENOSYS,
       strerror(errno), errno);
   }
+
+  pr_event_generate("core.chroot", path);
+
+  res = explain_platform_no_trunc(p, path);
+  if (res < 0) {
+    fail_unless(errno == ENOSYS, "Expected ENOSYS (%d), got %s (%d)", ENOSYS,
+      strerror(errno), errno);
+  }
+
+  explain_platform_free(p);
 }
 END_TEST
 
 START_TEST (platform_path_max_test) {
   long res;
   const char *path;
+
+  explain_platform_init(p);
 
   res = explain_platform_path_max(p, NULL);
   fail_unless(res < 0, "Failed to handle null path");
@@ -114,15 +144,29 @@ START_TEST (platform_path_max_test) {
     fail_unless(errno == ENOSYS, "Expected ENOSYS (%d), got %s (%d)", ENOSYS,
       strerror(errno), errno);
   }
+
+  pr_event_generate("core.chroot", path);
+
+  res = explain_platform_path_max(p, path);
+  if (res < 0) {
+    fail_unless(errno == ENOSYS, "Expected ENOSYS (%d), got %s (%d)", ENOSYS,
+      strerror(errno), errno);
+  }
+
+  explain_platform_free(p);
 }
 END_TEST
 
 START_TEST (platform_open_max_test) {
   long res, expected;
 
+  explain_platform_init(p);
+
   expected = sysconf(_SC_OPEN_MAX);
   res = explain_platform_open_max(p);
   fail_unless(res == expected, "Expected %ld, got %ld", expected, res);
+
+  explain_platform_free(p);
 }
 END_TEST
 

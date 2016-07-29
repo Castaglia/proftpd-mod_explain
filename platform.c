@@ -120,6 +120,10 @@ long explain_platform_open_max(pool *p) {
 void explain_platform_init(pool *p) {
   (void) p;
 
+  platform_sess_name_max = -1;
+  platform_sess_no_trunc = -1;
+  platform_sess_path_max = -1;
+
   /* Register a listener for the chroot event, so that we can look up
    * system limits, based on paths, BEFORE the chroot(2) happens.
    */
@@ -131,4 +135,8 @@ void explain_platform_free(pool *p) {
   (void) p;
 
   pr_event_unregister(&explain_module, "core.chroot", NULL);
+
+  platform_sess_name_max = -1;
+  platform_sess_no_trunc = -1;
+  platform_sess_path_max = -1;
 }
