@@ -31,6 +31,7 @@ struct testsuite_info {
 
 static struct testsuite_info suites[] = {
   { "generic",		tests_get_generic_suite },
+  { "platform",		tests_get_platform_suite },
 
   { NULL, NULL }
 };

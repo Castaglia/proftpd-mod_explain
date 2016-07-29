@@ -112,3 +112,8 @@ void explain_platform_init(pool *p) {
     NULL);
 }
 
+void explain_platform_free(pool *p) {
+  (void) p;
+
+  pr_event_unregister(&explain_module, "core.chroot", NULL);
+}
