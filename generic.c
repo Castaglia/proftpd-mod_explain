@@ -111,9 +111,16 @@ static const char *describe_generic(pool *p, const char *syscall) {
 const char *explain_describe_generic(pool *p, int xerrno, const char *syscall) {
   const char *explained = NULL;
 
+  if (p == NULL ||
+      syscall == NULL) {
+    errno = EINVAL;
+    return NULL;
+  }
+
   switch (xerrno) {
     case 0:
       /* Not an error. */
+      errno = ENOENT;
       break;
 
 #if defined(EAGAIN)

@@ -35,5 +35,6 @@ long explain_platform_path_max(pool *p, const char *path);
 long explain_platform_open_max(pool *p);
 
 void explain_platform_init(pool *p);
+void explain_platform_free(pool *p);
 
 #endif /* MOD_EXPLAIN_PLATFORM_H */

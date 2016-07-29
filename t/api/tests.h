@@ -30,6 +30,7 @@
 #include "mod_explain.h"
 
 #include "generic.h"
+#include "platform.h"
 
 #ifdef HAVE_CHECK_H
 # include <check.h>
@@ -38,6 +39,7 @@
 #endif
 
 Suite *tests_get_generic_suite(void);
+Suite *tests_get_platform_suite(void);
 
 unsigned int recvd_signal_flags;
 extern pid_t mpid;
