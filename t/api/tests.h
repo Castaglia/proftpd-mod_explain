@@ -40,6 +40,7 @@
 
 Suite *tests_get_generic_suite(void);
 Suite *tests_get_platform_suite(void);
+Suite *tests_get_path_suite(void);
 
 unsigned int recvd_signal_flags;
 extern pid_t mpid;

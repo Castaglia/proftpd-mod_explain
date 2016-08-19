@@ -42,13 +42,15 @@ TEST_API_DEPS=\
   $(top_srcdir)/src/error.o \
   $(top_srcdir)/src/fsio-err.o \
   $(module_srcdir)/generic.o \
-  $(module_srcdir)/platform.o
+  $(module_srcdir)/platform.o \
+  $(module_srcdir)/path.o
 
 TEST_API_LIBS=-lcheck
 
 TEST_API_OBJS=\
   api/generic.o \
   api/platform.o \
+  api/path.o \
   api/stubs.o \
   api/tests.o
 

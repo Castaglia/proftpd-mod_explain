@@ -77,27 +77,51 @@ static array_header *path_split(pool *p, const char *path) {
   return components;
 }
 
+static const char *describe_enametoolong_name(pool *p, const char *name,
+    size_t name_len, unsigned long name_max) {
+  return pstrcat(p, "path component '", name,
+    "' exceeds the system maximum name length (",
+    ul2s(p, (unsigned long) name_len), " > max ", ul2s(p, name_max), ")", NULL);
+}
+
+static const char *describe_enametoolong_path(pool *p, const char *path,
+    size_t path_len, unsigned long path_max) {
+  return pstrcat(p, "'", path, "' exceeds the system maximum path length (",
+    ul2s(p, (unsigned long) path_len), " > max ", ul2s(p, path_max), ")", NULL);
+}
+
+static const char *describe_enoent_path(pool *p, const char *path) {
+  return pstrcat(p, "directory '", path, "' does not exist", NULL);
+}
+
 const char *explain_path_error(pool *p, int xerrno, const char *full_path,
     int flags, mode_t mode) {
   register unsigned int i;
   array_header *components = NULL;
-  const char *path = NULL, *explained = NULL;
+  const char *explained = NULL, *path = NULL;
   unsigned long name_max, no_trunc;
+
+  if (p == NULL ||
+      full_path == NULL) {
+    errno = EINVAL;
+    return NULL;
+  }
 
   /* Try to get some of the easy cases out of the way first. */
 
   if (xerrno == ENAMETOOLONG) {
-    size_t path_len;
     unsigned long path_max;
 
-    path_max = explain_platform_path_max(p, path);
-    path_len = strlen(path);
-    if (path_len > path_max) {
-      explained = pstrcat(p, "'", path,
-        "' exceeds the system maximum path length (",
-        ul2s(p, (unsigned long) path_len), " > max ",
-        ul2s(p, path_max), ")", NULL);
-      return explained;
+    path_max = explain_platform_path_max(p, full_path);
+    if (path_max > 0) {
+      size_t path_len;
+
+      path_len = strlen(full_path);
+      if (path_len > path_max) {
+        explained = describe_enametoolong_path(p, full_path, path_len,
+          path_max);
+        return explained;
+      }
     }
   }
 
@@ -109,10 +133,10 @@ const char *explain_path_error(pool *p, int xerrno, const char *full_path,
    * each fully qualified component along the way.
    */
 
-  components = path_split(p, path);
+  components = path_split(p, full_path);
 
-  name_max = explain_platform_name_max(p, path);
-  no_trunc = explain_platform_no_trunc(p, path);
+  name_max = explain_platform_name_max(p, full_path);
+  no_trunc = explain_platform_no_trunc(p, full_path);
 
   for (i = 0; i < components->nelts; i++) {
     const char **elts, *component;
@@ -133,10 +157,8 @@ const char *explain_path_error(pool *p, int xerrno, const char *full_path,
        */
       if (component_len > name_max &&
           no_trunc == 1) {
-        explained = pstrcat(p, "path component '", component,
-          "' exceeds the system maximum name length (",
-          ul2s(p, (unsigned long) component_len), " > max ",
-          ul2s(p, name_max), ")", NULL);
+        explained = describe_enametoolong_name(p, component, component_len,
+          name_max);
         return explained;
       }
     }
@@ -161,8 +183,7 @@ const char *explain_path_error(pool *p, int xerrno, const char *full_path,
       res = pr_fsio_lstat(path, &st);
       if (res < 0) {
         if (errno == ENOENT) {
-          /* Explains ENOENT */
-          explained = pstrcat(p, "directory '", path, "' does not exist", NULL);
+          explained = describe_enoent_path(p, path);
         }
 
         break; 
