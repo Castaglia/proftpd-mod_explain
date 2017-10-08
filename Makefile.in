@@ -1,8 +1,10 @@
-top_builddir=../..
-top_srcdir=../..
+# Note: we include the additional tweaking of top_builddir, so that LIBTOOL
+# resolves to the correct place.
+top_builddir=@top_builddir@/../..
+top_srcdir=@top_srcdir@
 srcdir=@srcdir@
 
-include $(top_srcdir)/Make.rules
+include $(top_builddir)/Make.rules
 
 .SUFFIXES: .la .lo
 
@@ -24,9 +26,9 @@ SHARED_MODULE_OBJS=mod_explain.lo \
   chroot.lo
 
 # Necessary redefinitions
-INCLUDES=-I. -I./include -I../.. -I../../include @INCLUDES@
+INCLUDES=-I. -I../.. -I../../include -I$(top_srcdir)/../../include @INCLUDES@
 CPPFLAGS= $(ADDL_CPPFLAGS) -DHAVE_CONFIG_H $(DEFAULT_PATHS) $(PLATFORM) $(INCLUDES)
-LDFLAGS=-L../../lib @LIBDIRS@
+LDFLAGS=-L../../lib @LDFLAGS@
 
 .c.o:
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
@@ -35,7 +37,7 @@ LDFLAGS=-L../../lib @LIBDIRS@
 	$(LIBTOOL) --mode=compile --tag=CC $(CC) $(CPPFLAGS) $(CFLAGS) $(SHARED_CFLAGS) -c $< -o $@
 
 shared: $(SHARED_MODULE_OBJS)
-	$(LIBTOOL) --mode=link --tag=CC $(CC) -o $(MODULE_NAME).la $(SHARED_MODULE_OBJS) -rpath $(LIBEXECDIR) $(LDFLAGS) $(SHARED_LDFLAGS) $(SHARED_MODULE_LIBS) `cat $(MODULE_NAME).c | grep '$$Libraries:' | sed -e 's/^.*\$$Libraries: \(.*\)\\$$/\1/'`
+	$(LIBTOOL) --mode=link --tag=CC $(CC) -o $(MODULE_NAME).la $(SHARED_MODULE_OBJS) -rpath $(LIBEXECDIR) $(LDFLAGS) $(SHARED_LDFLAGS) $(SHARED_MODULE_LIBS) `cat $(top_srcdir)/$(MODULE_NAME).c | grep '$$Libraries:' | sed -e 's/^.*\$$Libraries: \(.*\)\\$$/\1/'`
 
 static: $(MODULE_OBJS)
 	$(AR) rc $(MODULE_NAME).a $(MODULE_OBJS)

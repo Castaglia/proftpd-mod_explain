@@ -323,6 +323,7 @@ Implementation:
     Solution: advice
 
   Would be very nice.  Hard to do that in a SINGLE line of log text, though.
+  (Perhaps if a JSON formatted log is requested/offered?)
 
 Tasks
 

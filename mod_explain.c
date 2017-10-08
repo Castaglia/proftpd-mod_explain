@@ -1,6 +1,6 @@
 /*
  * ProFTPD - mod_explain
- * Copyright (c) 2016 TJ Saunders
+ * Copyright (c) 2016-2017 TJ Saunders
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,7 +40,7 @@ static int explain_engine = TRUE;
 
 static const char *trace_channel = "explain";
 
-/* Error explanation providers. */
+/* Error explainer. */
 
 static const char *explain_chmod(pool *p, int xerrno, const char *path,
     mode_t mode, const char **args) {
@@ -188,8 +188,8 @@ static void explain_mod_unload_ev(const void *event_data, void *user_data) {
     /* Unregister ourselves from all events. */
     pr_event_unregister(&explain_module, NULL, NULL);
 
-    /* Remove our explanations. */
-    (void) pr_error_unregister_explanations(explain_pool, &explain_module,
+    /* Remove our explainer. */
+    (void) pr_error_unregister_explainer(explain_pool, &explain_module,
       "explain");
 
     destroy_pool(explain_pool);
@@ -200,29 +200,29 @@ static void explain_mod_unload_ev(const void *event_data, void *user_data) {
 
 static void explain_postparse_ev(const void *event_data, void *user_data) {
   if (explain_engine == TRUE) {
-    pr_error_explanations_t *explanations;
+    pr_error_explainer_t *explainer;
 
-    explanations = pr_error_register_explanations(explain_pool,
-      &explain_module, "explain");
-    if (explanations != NULL) {
-      explanations->explain_chmod = explain_chmod;
-      explanations->explain_chown = explain_chown;
-      explanations->explain_chroot = explain_chroot;
-      explanations->explain_close = explain_close;
-      explanations->explain_fchmod = explain_fchmod;
-      explanations->explain_fchown = explain_fchown;
-      explanations->explain_lchown = explain_lchown;
-      explanations->explain_mkdir = explain_mkdir;
-      explanations->explain_open = explain_open;
-      explanations->explain_read = explain_read;
-      explanations->explain_rename = explain_rename;
-      explanations->explain_rmdir = explain_rmdir;
-      explanations->explain_stat = explain_stat;
-      explanations->explain_unlink = explain_unlink;
-      explanations->explain_write = explain_write;
+    explainer = pr_error_register_explainer(explain_pool, &explain_module,
+      "explain");
+    if (explainer != NULL) {
+      explainer->explain_chmod = explain_chmod;
+      explainer->explain_chown = explain_chown;
+      explainer->explain_chroot = explain_chroot;
+      explainer->explain_close = explain_close;
+      explainer->explain_fchmod = explain_fchmod;
+      explainer->explain_fchown = explain_fchown;
+      explainer->explain_lchown = explain_lchown;
+      explainer->explain_mkdir = explain_mkdir;
+      explainer->explain_open = explain_open;
+      explainer->explain_read = explain_read;
+      explainer->explain_rename = explain_rename;
+      explainer->explain_rmdir = explain_rmdir;
+      explainer->explain_stat = explain_stat;
+      explainer->explain_unlink = explain_unlink;
+      explainer->explain_write = explain_write;
 
     } else {
-      pr_trace_msg(trace_channel, 1, "error registering error explanations: %s",
+      pr_trace_msg(trace_channel, 1, "error registering error explainer: %s",
         strerror(errno));
       explain_engine = FALSE;
     }
@@ -230,6 +230,8 @@ static void explain_postparse_ev(const void *event_data, void *user_data) {
 }
 
 static void explain_restart_ev(const void *event_data, void *user_data) {
+  (void) pr_error_unregister_explainer(explain_pool, &explain_module,
+    "explain");
   destroy_pool(explain_pool);
   explain_pool = make_sub_pool(permanent_pool);
   pr_pool_tag(explain_pool, MOD_EXPLAIN_VERSION);
@@ -239,6 +241,8 @@ static void explain_restart_ev(const void *event_data, void *user_data) {
 }
 
 static void explain_shutdown_ev(const void *event_data, void *user_data) {
+  (void) pr_error_unregister_explainer(explain_pool, &explain_module,
+    "explain");
   destroy_pool(explain_pool);
   explain_pool = NULL;
 }
