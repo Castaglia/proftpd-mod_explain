@@ -1,6 +1,6 @@
 /*
  * ProFTPD - mod_explain testsuite
- * Copyright (c) 2016 TJ Saunders <tj@castaglia.org>
+ * Copyright (c) 2016-2017 TJ Saunders <tj@castaglia.org>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@
 /* Path API tests. */
 
 #include "tests.h"
+#include "path.h"
 
 static pool *p = NULL;
 
