@@ -17,29 +17,29 @@ LDFLAGS=-L$(top_builddir)/lib @LDFLAGS@
 EXEEXT=@EXEEXT@
 
 TEST_API_DEPS=\
-  $(top_builddir)/src/pool.o \
-  $(top_builddir)/src/privs.o \
-  $(top_builddir)/src/str.o \
-  $(top_builddir)/src/sets.o \
-  $(top_builddir)/src/table.o \
-  $(top_builddir)/src/event.o \
-  $(top_builddir)/src/timers.o \
-  $(top_builddir)/src/stash.o \
-  $(top_builddir)/src/modules.o \
-  $(top_builddir)/src/cmd.o \
-  $(top_builddir)/src/configdb.o \
-  $(top_builddir)/src/parser.o \
-  $(top_builddir)/src/regexp.o \
-  $(top_builddir)/src/fsio.o \
-  $(top_builddir)/src/netio.o \
-  $(top_builddir)/src/inet.o \
-  $(top_builddir)/src/netaddr.o \
-  $(top_builddir)/src/response.o \
-  $(top_builddir)/src/auth.o \
-  $(top_builddir)/src/env.o \
-  $(top_builddir)/src/trace.o \
-  $(top_builddir)/src/support.o \
-  $(top_builddir)/src/error.o \
+  $(top_builddir)/../src/pool.o \
+  $(top_builddir)/../src/privs.o \
+  $(top_builddir)/../src/str.o \
+  $(top_builddir)/../src/sets.o \
+  $(top_builddir)/../src/table.o \
+  $(top_builddir)/../src/event.o \
+  $(top_builddir)/../src/timers.o \
+  $(top_builddir)/../src/stash.o \
+  $(top_builddir)/../src/modules.o \
+  $(top_builddir)/../src/cmd.o \
+  $(top_builddir)/../src/configdb.o \
+  $(top_builddir)/../src/parser.o \
+  $(top_builddir)/../src/regexp.o \
+  $(top_builddir)/../src/fsio.o \
+  $(top_builddir)/../src/netio.o \
+  $(top_builddir)/../src/inet.o \
+  $(top_builddir)/../src/netaddr.o \
+  $(top_builddir)/../src/response.o \
+  $(top_builddir)/../src/auth.o \
+  $(top_builddir)/../src/env.o \
+  $(top_builddir)/../src/trace.o \
+  $(top_builddir)/../src/support.o \
+  $(top_builddir)/../src/error.o \
   $(module_srcdir)/generic.o \
   $(module_srcdir)/platform.o \
   $(module_srcdir)/path.o
