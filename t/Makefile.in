@@ -12,7 +12,7 @@ include $(top_builddir)/Make.rules
 # Necessary redefinitions
 INCLUDES=-I. -I.. -I$(module_srcdir)/include -I../../.. -I$(top_srcdir)/../../include @INCLUDES@
 CPPFLAGS= $(ADDL_CPPFLAGS) -DHAVE_CONFIG_H $(DEFAULT_PATHS) $(PLATFORM) $(INCLUDES)
-LDFLAGS=-L$(top_srcdir)/lib @LIBDIRS@
+LDFLAGS=-L$(top_builddir)/lib @LDFLAGS@
 
 EXEEXT=@EXEEXT@
 
