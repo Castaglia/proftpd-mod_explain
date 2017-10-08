@@ -1,7 +1,7 @@
 CC=@CC@
 @SET_MAKE@
 
-top_builddir=@top_builddir@/../..
+top_builddir=@top_builddir@/..
 top_srcdir=@top_srcdir@
 module_srcdir=..
 srcdir=@srcdir@
