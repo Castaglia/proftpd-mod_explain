@@ -1,7 +1,7 @@
 CC=@CC@
 @SET_MAKE@
 
-top_builddir=@top_builddir@/../../..
+top_builddir=@top_builddir@/../..
 top_srcdir=@top_srcdir@
 module_srcdir=..
 srcdir=@srcdir@
@@ -10,7 +10,7 @@ VPATH=@srcdir@
 include $(top_builddir)/Make.rules
 
 # Necessary redefinitions
-INCLUDES=-I. -I.. -I$(module_srcdir)/include -I../../.. -I../../../include @INCLUDES@
+INCLUDES=-I. -I.. -I$(module_srcdir)/include -I../../.. -I$(top_srcdir)/../../include @INCLUDES@
 CPPFLAGS= $(ADDL_CPPFLAGS) -DHAVE_CONFIG_H $(DEFAULT_PATHS) $(PLATFORM) $(INCLUDES)
 LDFLAGS=-L$(top_srcdir)/lib @LIBDIRS@
 
