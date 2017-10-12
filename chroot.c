@@ -1,6 +1,6 @@
 /*
  * ProFTPD - mod_explain: chroot(2)
- * Copyright (c) 2016 TJ Saunders
+ * Copyright (c) 2016-2017 TJ Saunders
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,6 +33,10 @@ static const char *describe_kernel_enomem(pool *p, const char *syscall) {
 }
 #endif /* ENOMEM */
 
+static const char *describe_nonroot_eperm(pool *p, const char *syscall) {
+  return pstrcat(p, "the process does not have permission to change its root directory due to lack of root privileges");
+}
+
 static const char *get_args(pool *p, const char *path) {
   const char *args;
 
@@ -48,12 +52,17 @@ const char *explain_chroot_error(pool *p, int xerrno, const char *path,
   *args = get_args(p, path);
 
   switch (xerrno) {
+    case EPERM:
+      if (getuid() != PR_ROOT_UID) {
+        explained = describe_nonroot_eperm(p, syscall);
+        break;
+      }
+
     case EACCES:
     case ENOENT:
     case ELOOP:
     case ENAMETOOLONG:
     case ENOTDIR:
-    case EPERM:
       explained = explain_path_error(p, xerrno, path, path_flags, S_IFDIR);
       break;
 

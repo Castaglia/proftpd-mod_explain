@@ -37,6 +37,7 @@ pool *explain_pool = NULL;
 unsigned long explain_opts = 0UL;
 
 static int explain_engine = TRUE;
+static unsigned int explain_verbosity = PR_ERROR_FORMAT_USE_TERSE;
 
 static const char *trace_channel = "explain";
 
@@ -179,6 +180,35 @@ MODRET set_explainoptions(cmd_rec *cmd) {
   return PR_HANDLED(cmd);
 }
 
+/* usage: ExplainVerbosity minimal|terse|detailed */
+MODRET set_explainverbosity(cmd_rec *cmd) {
+  unsigned int verbosity = 0;
+  config_rec *c;
+
+  CHECK_CONF(cmd, CONF_ROOT|CONF_VIRTUAL|CONF_GLOBAL);
+  CHECK_ARGS(cmd, 1);
+
+  if (strcasecmp(cmd->argv[1], "minimal") == 0) {
+    verbosity = PR_ERROR_FORMAT_USE_MINIMAL;
+
+  } else if (strcasecmp(cmd->argv[1], "terse") == 0) {
+    verbosity = PR_ERROR_FORMAT_USE_TERSE;
+
+  } else if (strcasecmp(cmd->argv[1], "detailed") == 0) {
+    verbosity = PR_ERROR_FORMAT_USE_DETAILED;
+
+  } else {
+    CONF_ERROR(cmd, pstrcat(cmd->tmp_pool, ": unknown ExplainVerbosity '",
+      cmd->argv[1], "'", NULL));
+  }
+
+  c = add_config_param(cmd->argv[0], 1, NULL);
+  c->argv[0] = palloc(c->pool, sizeof(unsigned int));
+  *((unsigned int *) c->argv[0]) = verbosity;
+
+  return PR_HANDLED(cmd);
+}
+
 /* Event listeners
  */
 
@@ -282,6 +312,13 @@ static int explain_sess_init(void) {
    * on a per-session basis.  Best in a POST_CMD PASS handler, though.
    */
 
+  c = find_config(main_server->conf, CONF_PARAM, "ExplainVerbosity", FALSE);
+  if (c != NULL) {
+    explain_verbosity = *((unsigned int *) c->argv[0]);
+  }
+
+  pr_error_use_formats(explain_verbosity);
+
   c = find_config(main_server->conf, CONF_PARAM, "ExplainOptions", FALSE);
   while (c != NULL) {
     unsigned long opts;
@@ -303,6 +340,7 @@ static int explain_sess_init(void) {
 static conftable explain_conftab[] = {
   { "ExplainEngine",		set_explainengine,		NULL },
   { "ExplainOptions",		set_explainoptions,		NULL },
+  { "ExplainVerbosity",		set_explainverbosity,		NULL },
 
   { NULL }
 };

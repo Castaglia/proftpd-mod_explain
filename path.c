@@ -1,6 +1,6 @@
 /*
  * ProFTPD - mod_explain: path_resolution(2)
- * Copyright (c) 2016 TJ Saunders
+ * Copyright (c) 2016-2017 TJ Saunders
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,9 +33,9 @@ static const char *ul2s(pool *p, unsigned long l) {
 }
 
 static array_header *path_split(pool *p, const char *path) {
-  char buf[PR_TUNABLE_PATH_MAX+1], *full_path, *ptr;
+  char buf[PR_TUNABLE_PATH_MAX+1], *full_path;
   size_t full_pathlen;
-  array_header *components;
+  array_header *first, *components;
 
   pr_fs_virtual_path(path, buf, sizeof(buf)-1);
   full_path = buf;
@@ -47,31 +47,18 @@ static array_header *path_split(pool *p, const char *path) {
     full_path[full_pathlen] = '.';
   }
 
-  components = make_array(p, 1, sizeof(char *));
+  first = make_array(p, 1, sizeof(char *));
 
   /* The first component is ALWAYS '/'. */
-  *((char **) push_array(components)) = pstrdup(p, "/");
+  *((char **) push_array(first)) = pstrdup(p, "/");
 
   if (full_pathlen == 1) {
-    return components;
+    return first;
   }
 
-  ptr = full_path + 1;
-  while (ptr != NULL) {
-    char *ptr2;
-
-    pr_signals_handle();
-
-    ptr2 = strchr(ptr, '/');
-    if (ptr2 == NULL) {
-      /* Last component in the path. */
-      *((char **) push_array(components)) = pstrdup(p, ptr);
-      ptr = NULL;
-      continue;
-    }
-
-    *((char **) push_array(components)) = pstrndup(p, ptr, ptr2 - ptr);
-    ptr = ptr2 + 1;
+  components = pr_str_text_to_array(p, full_path, '/');
+  if (components != NULL) {
+    components = append_arrays(p, first, components);
   }
 
   return components;
@@ -191,7 +178,8 @@ const char *explain_path_error(pool *p, int xerrno, const char *full_path,
 
       /* XXX What if this is a symlink? */
 
-      if (!S_ISDIR(st.st_mode)) {
+      if (!S_ISLNK(st.st_mode) &&
+          !S_ISDIR(st.st_mode)) {
         /* Explains ENOTDIR */
         explained = pstrcat(p, "path '", path,
           "' does not refer to a directory", NULL);
