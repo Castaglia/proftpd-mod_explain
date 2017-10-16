@@ -132,7 +132,7 @@ API:
      *
      * Where `error` is:
      *
-     *  "${err_text} (${err_name} [${err_errno}])"
+     *  "${err_text} [${err_name} (${err_errno})]"
      *
      * DETAILED format, without explanation:
      *
