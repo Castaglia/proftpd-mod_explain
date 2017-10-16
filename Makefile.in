@@ -17,13 +17,19 @@ MODULE_OBJS=mod_explain.o \
   generic.o \
   platform.o \
   path.o \
-  chroot.o
+  chroot.o \
+  lstat.o \
+  stat.o \
+  unlink.o
 
 SHARED_MODULE_OBJS=mod_explain.lo \
   generic.lo \
   platform.lo \
   path.lo \
-  chroot.lo
+  chroot.lo \
+  lstat.lo \
+  stat.lo \
+  unlink.lo
 
 # Necessary redefinitions
 INCLUDES=-I. -I../.. -I../../include -I$(top_srcdir)/../../include @INCLUDES@

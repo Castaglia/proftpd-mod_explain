@@ -28,6 +28,9 @@
 #include "mod_explain.h"
 #include "platform.h"
 #include "chroot.h"
+#include "lstat.h"
+#include "stat.h"
+#include "unlink.h"
 
 extern xaset_t *server_list;
 
@@ -37,7 +40,7 @@ pool *explain_pool = NULL;
 unsigned long explain_opts = 0UL;
 
 static int explain_engine = TRUE;
-static unsigned int explain_verbosity = PR_ERROR_FORMAT_USE_TERSE;
+static unsigned int explain_verbosity = PR_ERROR_FORMAT_USE_DETAILED;
 
 static const char *trace_channel = "explain";
 
@@ -84,6 +87,11 @@ static const char *explain_lchown(pool *p, int xerrno, const char *path,
   return NULL;
 }
 
+static const char *explain_lstat(pool *p, int xerrno, const char *path,
+    struct stat *st, const char **args) {
+  return explain_lstat_error(p, xerrno, path, st, args);
+}
+
 static const char *explain_mkdir(pool *p, int xerrno, const char *path,
     mode_t mode, const char **args) {
   errno = ENOSYS;
@@ -116,14 +124,12 @@ static const char *explain_rmdir(pool *p, int xerrno, const char *path,
 
 static const char *explain_stat(pool *p, int xerrno, const char *path,
     struct stat *st, const char **args) {
-  errno = ENOSYS;
-  return NULL;
+  return explain_stat_error(p, xerrno, path, st, args);
 }
 
 static const char *explain_unlink(pool *p, int xerrno, const char *path,
     const char **args) {
-  errno = ENOSYS;
-  return NULL;
+  return explain_unlink_error(p, xerrno, path, args);
 }
 
 static const char *explain_write(pool *p, int xerrno, int fd,
@@ -242,6 +248,7 @@ static void explain_postparse_ev(const void *event_data, void *user_data) {
       explainer->explain_fchmod = explain_fchmod;
       explainer->explain_fchown = explain_fchown;
       explainer->explain_lchown = explain_lchown;
+      explainer->explain_lstat = explain_lstat;
       explainer->explain_mkdir = explain_mkdir;
       explainer->explain_open = explain_open;
       explainer->explain_read = explain_read;

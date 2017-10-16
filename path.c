@@ -25,6 +25,15 @@
 #include "path.h"
 #include "platform.h"
 
+static const char *trace_channel = "explain.path";
+
+static const char *mode2s(pool *p, mode_t o) {
+  char buf[1024];
+  memset(buf, '\0', sizeof(buf));
+  snprintf(buf, sizeof(buf)-1, "%04o", (int) (o & ~S_IFMT));
+  return pstrdup(p, buf);
+}
+
 static const char *ul2s(pool *p, unsigned long l) {
   char buf[1024];
   memset(buf, '\0', sizeof(buf));
@@ -61,31 +70,51 @@ static array_header *path_split(pool *p, const char *path) {
     components = append_arrays(p, first, components);
   }
 
+  pr_trace_msg(trace_channel, 19, "split path '%s' into %u components", path,
+    components->nelts);
   return components;
 }
 
 static const char *describe_enametoolong_name(pool *p, const char *name,
-    size_t name_len, unsigned long name_max) {
+    size_t name_len, unsigned long name_max, int flags) {
   return pstrcat(p, "path component '", name,
     "' exceeds the system maximum name length (",
     ul2s(p, (unsigned long) name_len), " > max ", ul2s(p, name_max), ")", NULL);
 }
 
 static const char *describe_enametoolong_path(pool *p, const char *path,
-    size_t path_len, unsigned long path_max) {
+    size_t path_len, unsigned long path_max, int flags) {
   return pstrcat(p, "'", path, "' exceeds the system maximum path length (",
     ul2s(p, (unsigned long) path_len), " > max ", ul2s(p, path_max), ")", NULL);
 }
 
-static const char *describe_enoent_path(pool *p, const char *path) {
+static const char *describe_eacces_dir(pool *p, const char *path, int flags) {
+  return pstrcat(p, "directory '", path, "' is not searchable by the user",
+    NULL);
+}
+
+static const char *describe_eacces_file(pool *p, const char *path, int flags) {
+  if (flags & EXPLAIN_PATH_FL_WANT_SEARCH) {
+    return pstrcat(p, "file '", path, "' is not searchable by the user", NULL);
+  }
+
+  return pstrcat(p, "directory containing '", path,
+    "' is not writable by the user", NULL);
+}
+
+static const char *describe_enoent_dir(pool *p, const char *path, int flags) {
   return pstrcat(p, "directory '", path, "' does not exist", NULL);
 }
 
-const char *explain_path_error(pool *p, int xerrno, const char *full_path,
+static const char *describe_enoent_file(pool *p, const char *path, int flags) {
+  return pstrcat(p, "file '", path, "' does not exist", NULL);
+}
+
+const char *explain_path_error(pool *p, int err_errno, const char *full_path,
     int flags, mode_t mode) {
   register unsigned int i;
   array_header *components = NULL;
-  const char *explained = NULL, *path = NULL;
+  const char *explained = NULL, *path = NULL, *prev_path = NULL;
   unsigned long name_max, no_trunc;
 
   if (p == NULL ||
@@ -96,7 +125,7 @@ const char *explain_path_error(pool *p, int xerrno, const char *full_path,
 
   /* Try to get some of the easy cases out of the way first. */
 
-  if (xerrno == ENAMETOOLONG) {
+  if (err_errno == ENAMETOOLONG) {
     unsigned long path_max;
 
     path_max = explain_platform_path_max(p, full_path);
@@ -106,7 +135,7 @@ const char *explain_path_error(pool *p, int xerrno, const char *full_path,
       path_len = strlen(full_path);
       if (path_len > path_max) {
         explained = describe_enametoolong_path(p, full_path, path_len,
-          path_max);
+          path_max, flags);
         return explained;
       }
     }
@@ -127,14 +156,15 @@ const char *explain_path_error(pool *p, int xerrno, const char *full_path,
 
   for (i = 0; i < components->nelts; i++) {
     const char **elts, *component;
-    int final_component = FALSE;
+    int final_component = FALSE, res, xerrno = 0;
+    struct stat st;
 
     pr_signals_handle();
 
     elts = components->elts;
     component = elts[i];
 
-    if (xerrno == ENAMETOOLONG) {
+    if (err_errno == ENAMETOOLONG) {
       size_t component_len;
 
       component_len = strlen(component);
@@ -145,7 +175,7 @@ const char *explain_path_error(pool *p, int xerrno, const char *full_path,
       if (component_len > name_max &&
           no_trunc == 1) {
         explained = describe_enametoolong_name(p, component, component_len,
-          name_max);
+          name_max, flags);
         return explained;
       }
     }
@@ -163,17 +193,33 @@ const char *explain_path_error(pool *p, int xerrno, const char *full_path,
 
     final_component = (i == (components->nelts-1));
 
-    if (final_component == FALSE) {
-      int res;
-      struct stat st;
+    res = pr_fsio_lstat(path, &st);
+    xerrno = errno;
 
-      res = pr_fsio_lstat(path, &st);
+    if (res < 0) {
+      pr_trace_msg(trace_channel, 3,
+        "error checking component #%u (of %u), path '%s': %s", i+1,
+        components->nelts, path, strerror(xerrno));
+    }
+
+    if (final_component == FALSE) {
       if (res < 0) {
-        if (errno == ENOENT) {
-          explained = describe_enoent_path(p, path);
+        switch (xerrno) {
+          case ENOENT:
+            explained = describe_enoent_dir(p, path, flags);
+            break;
+
+          case EACCES:
+            explained = describe_eacces_dir(p, path, flags);
+            break;
+
+          default:
+            pr_trace_msg(trace_channel, 3,
+              "unexplained error [%s (%d)] for directory '%s'",
+              strerror(xerrno), errno, path);
         }
 
-        break; 
+        break;
       }
 
       /* XXX What if this is a symlink? */
@@ -193,7 +239,48 @@ const char *explain_path_error(pool *p, int xerrno, const char *full_path,
        */
 
     } else {
+      /* Last component, full path, leaf file. */
+      if (res < 0) {
+        switch (xerrno) {
+          case ENOENT:
+            explained = describe_enoent_file(p, path, flags);
+            break;
+
+          case EACCES:
+            explained = describe_eacces_file(p, path, flags);
+            break;
+
+          default:
+            pr_trace_msg(trace_channel, 3,
+              "unexplained error [%s (%d)] for file '%s'",
+              strerror(xerrno), errno, path);
+        }
+
+        break;
+      }
+
+      switch (err_errno) {
+        case EACCES:
+          explained = describe_eacces_file(p, path, flags);
+          if (explained != NULL) {
+            if (pr_fsio_lstat(prev_path, &st) == 0) {
+              explained = pstrcat(p, explained, "; parent directory '",
+                prev_path, "' has perms ", mode2s(p, st.st_mode),
+                ", and is owned by UID ", pr_uid2str(p, st.st_uid),
+                ", GID ", pr_gid2str(p, st.st_gid), NULL);
+            }
+          }
+
+          break;
+
+        default:
+          pr_trace_msg(trace_channel, 3,
+            "unexplained error [%s (%d)] for file '%s'",
+            strerror(xerrno), errno, path);
+      }
     }
+
+    prev_path = path;
   }
 
   return explained;
