@@ -8,11 +8,15 @@ install:
   - sudo apt-get update -qq
   # for unit tests
   - sudo apt-get install -y check
+  - sudo apt-get install -y libsubunit-dev
   # for static code analysis
-  - sudo apt-get install -y cppcheck rats
+  # - sudo apt-get install -y cppcheck
+  # - sudo apt-get install -y rats
   # for test code coverage
   - sudo apt-get install -y lcov
   - gem install coveralls-lcov
+  # for HTML validation
+  - sudo apt-get install -y tidy
 
 before_script:
   - cd ${TRAVIS_BUILD_DIR}
@@ -30,11 +34,11 @@ script:
   - cp install-sh proftpd/contrib/mod_explain/
   - cp -R t/ proftpd/contrib/mod_explain/t/
   - cd proftpd
-  - ./configure LIBS='-lm -lrt -pthread' --enable-devel=coverage --enable-dso --enable-tests --with-shared=mod_explain
+  - ./configure LIBS='-lm -lsubunit -lrt -pthread' --enable-devel=coverage --enable-dso --enable-tests --with-shared=mod_explain
   - make
   # Last, a build with a static module, and run the tests
   - make clean
-  - ./configure LIBS='-lm -lrt -pthread' --enable-devel=coverage --enable-tests --with-modules=mod_explain
+  - ./configure LIBS='-lm -lsubunit -lrt -pthread' --enable-devel=coverage --enable-tests --with-modules=mod_explain
   - make
   - cd contrib/mod_explain && make TEST_VERBOSE=1 check && cd ../../
 
@@ -48,3 +52,5 @@ after_success:
   - lcov --list coverage.info
   # upload coverage info to coveralls
   - coveralls-lcov coverage.info
+  # Run some validation on the docs
+  - tidy -errors -omit -q mod_explain.html
