@@ -20,7 +20,8 @@ MODULE_OBJS=mod_explain.o \
   chroot.o \
   lstat.o \
   stat.o \
-  unlink.o
+  unlink.o \
+  open.o
 
 SHARED_MODULE_OBJS=mod_explain.lo \
   generic.lo \
@@ -29,7 +30,8 @@ SHARED_MODULE_OBJS=mod_explain.lo \
   chroot.lo \
   lstat.lo \
   stat.lo \
-  unlink.lo
+  unlink.lo \
+  open.lo
 
 # Necessary redefinitions
 INCLUDES=-I. -I../.. -I../../include -I$(top_srcdir)/../../include @INCLUDES@

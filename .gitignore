@@ -6,7 +6,7 @@ autom4te.cache
 mod_explain.h
 tests.log
 .libs
-.*.swp
+.*.sw?
 *.la
 *.lo
 *Tests*.log

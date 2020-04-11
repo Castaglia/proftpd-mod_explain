@@ -1,6 +1,6 @@
 /*
  * ProFTPD - mod_explain
- * Copyright (c) 2016-2017 TJ Saunders
+ * Copyright (c) 2016-2020 TJ Saunders
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,6 +31,7 @@
 #include "lstat.h"
 #include "stat.h"
 #include "unlink.h"
+#include "open.h"
 
 extern xaset_t *server_list;
 
@@ -63,24 +64,28 @@ static const char *explain_chroot(pool *p, int xerrno, const char *path,
   return explain_chroot_error(p, xerrno, path, args);
 }
 
+/* XXX TODO: Implement */
 static const char *explain_close(pool *p, int xerrno, int fd,
     const char **args) {
   errno = ENOSYS;
   return NULL;
 }
 
+/* XXX TODO: Implement */
 static const char *explain_fchmod(pool *p, int xerrno, int fd, mode_t mode,
     const char **args) {
   errno = ENOSYS;
   return NULL;
 }
 
+/* XXX TODO: Implement */
 static const char *explain_fchown(pool *p, int xerrno, int fd, uid_t uid,
     gid_t gid, const char **args) {
   errno = ENOSYS;
   return NULL;
 }
 
+/* XXX TODO: Implement */
 static const char *explain_lchown(pool *p, int xerrno, const char *path,
     uid_t uid, gid_t gid, const char **args) {
   errno = ENOSYS;
@@ -92,6 +97,7 @@ static const char *explain_lstat(pool *p, int xerrno, const char *path,
   return explain_lstat_error(p, xerrno, path, st, args);
 }
 
+/* XXX TODO: Implement */
 static const char *explain_mkdir(pool *p, int xerrno, const char *path,
     mode_t mode, const char **args) {
   errno = ENOSYS;
@@ -100,22 +106,24 @@ static const char *explain_mkdir(pool *p, int xerrno, const char *path,
 
 static const char *explain_open(pool *p, int xerrno, const char *path,
     int flags, mode_t mode, const char **args) {
-  errno = ENOSYS;
-  return NULL;
+  return explain_open_error(p, xerrno, path, flags, mode, args);
 }
 
+/* XXX TODO: Implement */
 static const char *explain_read(pool *p, int xerrno, int fd, void *buf,
     size_t sz, const char **args) {
   errno = ENOSYS;
   return NULL;
 }
 
+/* XXX TODO: Implement */
 static const char *explain_rename(pool *p, int xerrno, const char *old_path,
     const char *new_path, const char **args) {
   errno = ENOSYS;
   return NULL;
 }
 
+/* XXX TODO: Implement */
 static const char *explain_rmdir(pool *p, int xerrno, const char *path,
     const char **args) {
   errno = ENOSYS;
@@ -132,6 +140,7 @@ static const char *explain_unlink(pool *p, int xerrno, const char *path,
   return explain_unlink_error(p, xerrno, path, args);
 }
 
+/* XXX TODO: Implement */
 static const char *explain_write(pool *p, int xerrno, int fd,
     const void *buf, size_t sz, const char **args) {
   errno = ENOSYS;
@@ -220,17 +229,19 @@ MODRET set_explainverbosity(cmd_rec *cmd) {
 
 #if defined(PR_SHARED_MODULE)
 static void explain_mod_unload_ev(const void *event_data, void *user_data) {
-  if (strcmp((const char *) event_data, "mod_explain.c") == 0) {
-    /* Unregister ourselves from all events. */
-    pr_event_unregister(&explain_module, NULL, NULL);
-
-    /* Remove our explainer. */
-    (void) pr_error_unregister_explainer(explain_pool, &explain_module,
-      "explain");
-
-    destroy_pool(explain_pool);
-    explain_pool = NULL;
+  if (strcmp((const char *) event_data, "mod_explain.c") != 0) {
+    return;
   }
+
+  /* Unregister ourselves from all events. */
+  pr_event_unregister(&explain_module, NULL, NULL);
+
+  /* Remove our explainer. */
+  (void) pr_error_unregister_explainer(explain_pool, &explain_module,
+    "explain");
+
+  destroy_pool(explain_pool);
+  explain_pool = NULL;
 }
 #endif /* PR_SHARED_MODULE */
 

@@ -1,6 +1,6 @@
 /*
  * ProFTPD - mod_explain: path_resolution(2)
- * Copyright (c) 2016-2017 TJ Saunders
+ * Copyright (c) 2016-2020 TJ Saunders
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,14 +27,14 @@
 
 static const char *trace_channel = "explain.path";
 
-static const char *mode2s(pool *p, mode_t o) {
+static const char *mode2text(pool *p, mode_t o) {
   char buf[1024];
   memset(buf, '\0', sizeof(buf));
   snprintf(buf, sizeof(buf)-1, "%04o", (int) (o & ~S_IFMT));
   return pstrdup(p, buf);
 }
 
-static const char *ul2s(pool *p, unsigned long l) {
+static const char *ul2text(pool *p, unsigned long l) {
   char buf[1024];
   memset(buf, '\0', sizeof(buf));
   snprintf(buf, sizeof(buf)-1, "%lu", l);
@@ -79,13 +79,15 @@ static const char *describe_enametoolong_name(pool *p, const char *name,
     size_t name_len, unsigned long name_max, int flags) {
   return pstrcat(p, "path component '", name,
     "' exceeds the system maximum name length (",
-    ul2s(p, (unsigned long) name_len), " > max ", ul2s(p, name_max), ")", NULL);
+    ul2text(p, (unsigned long) name_len), " > max ", ul2text(p, name_max), ")",
+    NULL);
 }
 
 static const char *describe_enametoolong_path(pool *p, const char *path,
     size_t path_len, unsigned long path_max, int flags) {
   return pstrcat(p, "'", path, "' exceeds the system maximum path length (",
-    ul2s(p, (unsigned long) path_len), " > max ", ul2s(p, path_max), ")", NULL);
+    ul2text(p, (unsigned long) path_len), " > max ", ul2text(p, path_max), ")",
+    NULL);
 }
 
 static const char *describe_eacces_dir(pool *p, const char *path, int flags) {
@@ -265,7 +267,7 @@ const char *explain_path_error(pool *p, int err_errno, const char *full_path,
           if (explained != NULL) {
             if (pr_fsio_lstat(prev_path, &st) == 0) {
               explained = pstrcat(p, explained, "; parent directory '",
-                prev_path, "' has perms ", mode2s(p, st.st_mode),
+                prev_path, "' has perms ", mode2text(p, st.st_mode),
                 ", and is owned by UID ", pr_uid2str(p, st.st_uid),
                 ", GID ", pr_gid2str(p, st.st_gid), NULL);
             }
