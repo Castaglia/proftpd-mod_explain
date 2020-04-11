@@ -53,4 +53,4 @@ after_success:
   # upload coverage info to coveralls
   - coveralls-lcov coverage.info
   # Run some validation on the docs
-  # - tidy -errors -omit -q mod_explain.html
+  - tidy -errors -omit -q mod_explain.html
