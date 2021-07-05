@@ -1,8 +1,8 @@
 CC=@CC@
 @SET_MAKE@
 
-top_builddir=@top_builddir@/../..
-top_srcdir=@top_srcdir@
+top_builddir=../../..
+top_srcdir=../../..
 module_srcdir=..
 srcdir=@srcdir@
 VPATH=@srcdir@
@@ -10,9 +10,9 @@ VPATH=@srcdir@
 include $(top_builddir)/Make.rules
 
 # Necessary redefinitions
-INCLUDES=-I. -I.. -I$(module_srcdir)/include -I../../.. -I$(top_srcdir)/../../include @INCLUDES@
-CPPFLAGS= $(ADDL_CPPFLAGS) -DHAVE_CONFIG_H $(DEFAULT_PATHS) $(PLATFORM) $(INCLUDES)
-LDFLAGS=-L$(top_builddir)/lib @LDFLAGS@
+INCLUDES=-I. -I.. -I$(module_srcdir)/include -I../../.. -I../../../include @INCLUDES@
+TEST_CPPFLAGS=$(ADDL_CPPFLAGS) -DHAVE_CONFIG_H $(DEFAULT_PATHS) $(PLATFORM) $(INCLUDES)
+TEST_LDFLAGS=-L$(top_srcdir)/lib @LIBDIRS@
 
 EXEEXT=@EXEEXT@
 
@@ -56,10 +56,10 @@ TEST_API_OBJS=\
 dummy:
 
 api/.c.o:
-	$(CC) $(CPPFLAGS) $(CFLAGS) -c $<
+	$(CC) $(CPPFLAGS) $(TEST_CPPFLAGS) $(CFLAGS) -c $<
 
 api-tests$(EXEEXT): $(TEST_API_OBJS) $(TEST_API_DEPS)
-	$(LIBTOOL) --mode=link --tag=CC $(CC) $(LDFLAGS) -o $@ $(TEST_API_DEPS) $(TEST_API_OBJS) $(TEST_API_LIBS) $(LIBS)
+	$(LIBTOOL) --mode=link --tag=CC $(CC) $(LDFLAGS) $(TEST_LDFLAGS) -o $@ $(TEST_API_DEPS) $(TEST_API_OBJS) $(TEST_API_LIBS) $(LIBS)
 	./$@
 
 clean:

@@ -3,7 +3,7 @@ proftpd-mod_explain
 
 Status
 ------
-[![Build Status](https://travis-ci.org/Castaglia/proftpd-mod_explain.svg?branch=master)](https://travis-ci.org/Castaglia/proftpd-mod_explain)
+[![GitHub Actions CI Status](https://github.com/Castaglia/proftpd-mod_explain/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/Castaglia/proftpd-mod_explain/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-GPL-brightgreen.svg)](https://img.shields.io/badge/license-GPL-brightgreen.svg)
 
 Synopsis
