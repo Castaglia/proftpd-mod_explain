@@ -17,6 +17,7 @@ TEST_LDFLAGS=-L$(top_srcdir)/lib @LIBDIRS@
 EXEEXT=@EXEEXT@
 
 TEST_API_DEPS=\
+  $(top_builddir)/lib/prbase.a \
   $(top_builddir)/src/pool.o \
   $(top_builddir)/src/privs.o \
   $(top_builddir)/src/str.o \
