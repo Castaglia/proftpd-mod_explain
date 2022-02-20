@@ -23,6 +23,8 @@ TEST_API_DEPS=\
   $(top_builddir)/src/str.o \
   $(top_builddir)/src/sets.o \
   $(top_builddir)/src/table.o \
+  $(top_builddir)/src/netacl.o \
+  $(top_builddir)/src/class.o \
   $(top_builddir)/src/event.o \
   $(top_builddir)/src/timers.o \
   $(top_builddir)/src/stash.o \
