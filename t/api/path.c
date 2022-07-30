@@ -1,6 +1,6 @@
 /*
  * ProFTPD - mod_explain testsuite
- * Copyright (c) 2016-2017 TJ Saunders <tj@castaglia.org>
+ * Copyright (c) 2016-2022 TJ Saunders <tj@castaglia.org>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -46,13 +46,13 @@ START_TEST (path_error_params_test) {
   const char *desc;
 
   desc = explain_path_error(NULL, 0, NULL, 0, 0);
-  fail_unless(desc == NULL, "Failed to handle null pool");
-  fail_unless(errno == EINVAL, "Expected EINVAL (%d), got %s (%d)", EINVAL,
+  ck_assert_msg(desc == NULL, "Failed to handle null pool");
+  ck_assert_msg(errno == EINVAL, "Expected EINVAL (%d), got %s (%d)", EINVAL,
     strerror(errno), errno);
 
   desc = explain_path_error(p, 0, NULL, 0, 0);
-  fail_unless(desc == NULL, "Failed to handle null path");
-  fail_unless(errno == EINVAL, "Expected EINVAL (%d), got %s (%d)", EINVAL,
+  ck_assert_msg(desc == NULL, "Failed to handle null path");
+  ck_assert_msg(errno == EINVAL, "Expected EINVAL (%d), got %s (%d)", EINVAL,
     strerror(errno), errno);
 }
 END_TEST
