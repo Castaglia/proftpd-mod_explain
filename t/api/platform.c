@@ -1,6 +1,6 @@
 /*
  * ProFTPD - mod_explain testsuite
- * Copyright (c) 2016 TJ Saunders <tj@castaglia.org>
+ * Copyright (c) 2016-2022 TJ Saunders <tj@castaglia.org>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -48,7 +48,7 @@ START_TEST (platform_child_max_test) {
 
   expected = sysconf(_SC_CHILD_MAX);
   res = explain_platform_child_max(p);
-  fail_unless(res == expected, "Expected %ld, got %ld", expected, res);
+  ck_assert_msg(res == expected, "Expected %ld, got %ld", expected, res);
 
   explain_platform_free(p);
 }
@@ -61,7 +61,7 @@ START_TEST (platform_iov_max_test) {
 
   expected = sysconf(_SC_IOV_MAX);
   res = explain_platform_iov_max(p);
-  fail_unless(res == expected, "Expected %ld, got %ld", expected, res);
+  ck_assert_msg(res == expected, "Expected %ld, got %ld", expected, res);
 
   explain_platform_free(p);
 }
@@ -74,14 +74,14 @@ START_TEST (platform_name_max_test) {
   explain_platform_init(p);
 
   res = explain_platform_name_max(p, NULL);
-  fail_unless(res < 0, "Failed to handle null path");
-  fail_unless(errno == EINVAL, "Expected EINVAL (%d), got %s (%d)", EINVAL,
+  ck_assert_msg(res < 0, "Failed to handle null path");
+  ck_assert_msg(errno == EINVAL, "Expected EINVAL (%d), got %s (%d)", EINVAL,
     strerror(errno), errno);
 
   path = "/tmp";
   res = explain_platform_name_max(p, path);
   if (res < 0) {
-    fail_unless(errno == ENOSYS, "Expected ENOSYS (%d), got %s (%d)", ENOSYS,
+    ck_assert_msg(errno == ENOSYS, "Expected ENOSYS (%d), got %s (%d)", ENOSYS,
       strerror(errno), errno);
   }
 
@@ -89,7 +89,7 @@ START_TEST (platform_name_max_test) {
 
   res = explain_platform_name_max(p, path);
   if (res < 0) {
-    fail_unless(errno == ENOSYS, "Expected ENOSYS (%d), got %s (%d)", ENOSYS,
+    ck_assert_msg(errno == ENOSYS, "Expected ENOSYS (%d), got %s (%d)", ENOSYS,
       strerror(errno), errno);
   }
 
@@ -104,14 +104,14 @@ START_TEST (platform_no_trunc_test) {
   explain_platform_init(p);
 
   res = explain_platform_no_trunc(p, NULL);
-  fail_unless(res < 0, "Failed to handle null path");
-  fail_unless(errno == EINVAL, "Expected EINVAL (%d), got %s (%d)", EINVAL,
+  ck_assert_msg(res < 0, "Failed to handle null path");
+  ck_assert_msg(errno == EINVAL, "Expected EINVAL (%d), got %s (%d)", EINVAL,
     strerror(errno), errno);
 
   path = "/tmp";
   res = explain_platform_no_trunc(p, path);
   if (res < 0) {
-    fail_unless(errno == ENOSYS, "Expected ENOSYS (%d), got %s (%d)", ENOSYS,
+    ck_assert_msg(errno == ENOSYS, "Expected ENOSYS (%d), got %s (%d)", ENOSYS,
       strerror(errno), errno);
   }
 
@@ -119,7 +119,7 @@ START_TEST (platform_no_trunc_test) {
 
   res = explain_platform_no_trunc(p, path);
   if (res < 0) {
-    fail_unless(errno == ENOSYS, "Expected ENOSYS (%d), got %s (%d)", ENOSYS,
+    ck_assert_msg(errno == ENOSYS, "Expected ENOSYS (%d), got %s (%d)", ENOSYS,
       strerror(errno), errno);
   }
 
@@ -134,14 +134,14 @@ START_TEST (platform_path_max_test) {
   explain_platform_init(p);
 
   res = explain_platform_path_max(p, NULL);
-  fail_unless(res < 0, "Failed to handle null path");
-  fail_unless(errno == EINVAL, "Expected EINVAL (%d), got %s (%d)", EINVAL,
+  ck_assert_msg(res < 0, "Failed to handle null path");
+  ck_assert_msg(errno == EINVAL, "Expected EINVAL (%d), got %s (%d)", EINVAL,
     strerror(errno), errno);
 
   path = "/tmp";
   res = explain_platform_path_max(p, path);
   if (res < 0) {
-    fail_unless(errno == ENOSYS, "Expected ENOSYS (%d), got %s (%d)", ENOSYS,
+    ck_assert_msg(errno == ENOSYS, "Expected ENOSYS (%d), got %s (%d)", ENOSYS,
       strerror(errno), errno);
   }
 
@@ -149,7 +149,7 @@ START_TEST (platform_path_max_test) {
 
   res = explain_platform_path_max(p, path);
   if (res < 0) {
-    fail_unless(errno == ENOSYS, "Expected ENOSYS (%d), got %s (%d)", ENOSYS,
+    ck_assert_msg(errno == ENOSYS, "Expected ENOSYS (%d), got %s (%d)", ENOSYS,
       strerror(errno), errno);
   }
 
@@ -164,7 +164,7 @@ START_TEST (platform_open_max_test) {
 
   expected = sysconf(_SC_OPEN_MAX);
   res = explain_platform_open_max(p);
-  fail_unless(res == expected, "Expected %ld, got %ld", expected, res);
+  ck_assert_msg(res == expected, "Expected %ld, got %ld", expected, res);
 
   explain_platform_free(p);
 }

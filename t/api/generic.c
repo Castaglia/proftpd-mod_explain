@@ -1,6 +1,6 @@
 /*
  * ProFTPD - mod_explain testsuite
- * Copyright (c) 2016 TJ Saunders <tj@castaglia.org>
+ * Copyright (c) 2016-2022 TJ Saunders <tj@castaglia.org>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -45,19 +45,19 @@ START_TEST (generic_describe_generic_params_test) {
   const char *desc, *syscall;
 
   desc = explain_describe_generic(NULL, 0, NULL);
-  fail_unless(desc == NULL, "Failed to handle null pool");
-  fail_unless(errno == EINVAL, "Expected EINVAL (%d), got %s (%d)", EINVAL,
+  ck_assert_msg(desc == NULL, "Failed to handle null pool");
+  ck_assert_msg(errno == EINVAL, "Expected EINVAL (%d), got %s (%d)", EINVAL,
     strerror(errno), errno);
 
   desc = explain_describe_generic(p, 0, NULL);
-  fail_unless(desc == NULL, "Failed to handle null syscall");
-  fail_unless(errno == EINVAL, "Expected EINVAL (%d), got %s (%d)", EINVAL,
+  ck_assert_msg(desc == NULL, "Failed to handle null syscall");
+  ck_assert_msg(errno == EINVAL, "Expected EINVAL (%d), got %s (%d)", EINVAL,
     strerror(errno), errno);
 
   syscall = "write(2)";
   desc = explain_describe_generic(p, 0, syscall);
-  fail_unless(desc == NULL, "Failed to handle errno zero");
-  fail_unless(errno == ENOENT, "Expected ENOENT (%d), got %s (%d)", ENOENT,
+  ck_assert_msg(desc == NULL, "Failed to handle errno zero");
+  ck_assert_msg(errno == ENOENT, "Expected ENOENT (%d), got %s (%d)", ENOENT,
     strerror(errno), errno);
 }
 END_TEST
@@ -70,11 +70,11 @@ START_TEST (generic_describe_generic_eagain_test) {
   syscall = "write(2)";
   xerrno = EAGAIN;
   desc = explain_describe_generic(p, xerrno, syscall);
-  fail_unless(desc != NULL, "Failed to describe %s errno %d: %s", syscall,
+  ck_assert_msg(desc != NULL, "Failed to describe %s errno %d: %s", syscall,
     xerrno, strerror(errno));
 
   expected = "the write(2) system call was waiting to finish but was told not to wait";
-  fail_unless(strcmp(desc, expected) == 0,
+  ck_assert_msg(strcmp(desc, expected) == 0,
     "Expected '%s', got '%s'", expected, desc);
 #endif /* EAGAIN */
 }
@@ -88,11 +88,11 @@ START_TEST (generic_describe_generic_emfile_test) {
   syscall = "write(2)";
   xerrno = EMFILE;
   desc = explain_describe_generic(p, xerrno, syscall);
-  fail_unless(desc != NULL, "Failed to describe %s errno %d: %s", syscall,
+  ck_assert_msg(desc != NULL, "Failed to describe %s errno %d: %s", syscall,
     xerrno, strerror(errno));
 
   expected = "the process already has the maximum number of file descriptors open";
-  fail_unless(strcmp(desc, expected) == 0,
+  ck_assert_msg(strcmp(desc, expected) == 0,
     "Expected '%s', got '%s'", expected, desc);
 #endif /* EMFILE */
 }
@@ -106,11 +106,11 @@ START_TEST (generic_describe_generic_enfile_test) {
   syscall = "write(2)";
   xerrno = ENFILE;
   desc = explain_describe_generic(p, xerrno, syscall);
-  fail_unless(desc != NULL, "Failed to describe %s errno %d: %s", syscall,
+  ck_assert_msg(desc != NULL, "Failed to describe %s errno %d: %s", syscall,
     xerrno, strerror(errno));
 
   expected = "the system limit on the total number of open files has been reached";
-  fail_unless(strcmp(desc, expected) == 0,
+  ck_assert_msg(strcmp(desc, expected) == 0,
     "Expected '%s', got '%s'", expected, desc);
 #endif /* ENFILE */
 }
@@ -124,11 +124,11 @@ START_TEST (generic_describe_generic_eintr_test) {
   syscall = "write(2)";
   xerrno = EINTR;
   desc = explain_describe_generic(p, xerrno, syscall);
-  fail_unless(desc != NULL, "Failed to describe %s errno %d: %s", syscall,
+  ck_assert_msg(desc != NULL, "Failed to describe %s errno %d: %s", syscall,
     xerrno, strerror(errno));
 
   expected = "the write(2) system call was interrupted by a signal before it could finish";
-  fail_unless(strcmp(desc, expected) == 0,
+  ck_assert_msg(strcmp(desc, expected) == 0,
     "Expected '%s', got '%s'", expected, desc);
 #endif /* EINTR */
 }
@@ -142,11 +142,11 @@ START_TEST (generic_describe_generic_efault_test) {
   syscall = "write(2)";
   xerrno = EFAULT;
   desc = explain_describe_generic(p, xerrno, syscall);
-  fail_unless(desc != NULL, "Failed to describe %s errno %d: %s", syscall,
+  ck_assert_msg(desc != NULL, "Failed to describe %s errno %d: %s", syscall,
     xerrno, strerror(errno));
 
   expected = "one of the write(2) parameters is null, uninitialized, or points to invalid/unreachable memory";
-  fail_unless(strcmp(desc, expected) == 0,
+  ck_assert_msg(strcmp(desc, expected) == 0,
     "Expected '%s', got '%s'", expected, desc);
 #endif /* EFAULT */
 }
@@ -160,11 +160,11 @@ START_TEST (generic_describe_generic_eio_test) {
   syscall = "write(2)";
   xerrno = EIO;
   desc = explain_describe_generic(p, xerrno, syscall);
-  fail_unless(desc != NULL, "Failed to describe %s errno %d: %s", syscall,
+  ck_assert_msg(desc != NULL, "Failed to describe %s errno %d: %s", syscall,
     xerrno, strerror(errno));
 
   expected = "a low-level I/O error occurred, probably in hardware";
-  fail_unless(strcmp(desc, expected) == 0,
+  ck_assert_msg(strcmp(desc, expected) == 0,
     "Expected '%s', got '%s'", expected, desc);
 #endif /* EIO */
 }
@@ -178,11 +178,11 @@ START_TEST (generic_describe_generic_enomem_test) {
   syscall = "write(2)";
   xerrno = ENOMEM;
   desc = explain_describe_generic(p, xerrno, syscall);
-  fail_unless(desc != NULL, "Failed to describe %s errno %d: %s", syscall,
+  ck_assert_msg(desc != NULL, "Failed to describe %s errno %d: %s", syscall,
     xerrno, strerror(errno));
 
   expected = "there was not enough user-space memory available for write(2) to succeed";
-  fail_unless(strcmp(desc, expected) == 0,
+  ck_assert_msg(strcmp(desc, expected) == 0,
     "Expected '%s', got '%s'", expected, desc);
 #endif /* ENOMEM */
 }
@@ -196,11 +196,11 @@ START_TEST (generic_describe_generic_eperm_test) {
   syscall = "write(2)";
   xerrno = EPERM;
   desc = explain_describe_generic(p, xerrno, syscall);
-  fail_unless(desc != NULL, "Failed to describe %s errno %d: %s", syscall,
+  ck_assert_msg(desc != NULL, "Failed to describe %s errno %d: %s", syscall,
     xerrno, strerror(errno));
 
   expected = "the process does not have the appropriate privileges to use the write(2) system call";
-  fail_unless(strcmp(desc, expected) == 0,
+  ck_assert_msg(strcmp(desc, expected) == 0,
     "Expected '%s', got '%s'", expected, desc);
 #endif /* EPERM */
 }
@@ -213,11 +213,11 @@ START_TEST (generic_describe_generic_default_test) {
   syscall = "write(2)";
   xerrno = ENOTSOCK;
   desc = explain_describe_generic(p, xerrno, syscall);
-  fail_unless(desc != NULL, "Failed to describe %s errno %d: %s", syscall,
+  ck_assert_msg(desc != NULL, "Failed to describe %s errno %d: %s", syscall,
     xerrno, strerror(errno));
 
   expected = "the entropic gremlins have frobnicated the write(2) system call";
-  fail_unless(strcmp(desc, expected) == 0,
+  ck_assert_msg(strcmp(desc, expected) == 0,
     "Expected '%s', got '%s'", expected, desc);
 }
 END_TEST
