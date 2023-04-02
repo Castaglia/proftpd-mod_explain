@@ -38,7 +38,7 @@ static void tear_down(void) {
   if (p) {
     destroy_pool(p);
     p = NULL;
-  } 
+  }
 }
 
 START_TEST (generic_describe_generic_params_test) {

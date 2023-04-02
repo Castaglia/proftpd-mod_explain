@@ -39,7 +39,7 @@ static void tear_down(void) {
   if (p) {
     destroy_pool(p);
     p = NULL;
-  } 
+  }
 }
 
 START_TEST (path_error_params_test) {
