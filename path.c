@@ -1,6 +1,6 @@
 /*
  * ProFTPD - mod_explain: path_resolution(2)
- * Copyright (c) 2016-2017 TJ Saunders
+ * Copyright (c) 2016-2023 TJ Saunders
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -259,24 +259,21 @@ const char *explain_path_error(pool *p, int err_errno, const char *full_path,
         break;
       }
 
-      switch (err_errno) {
-        case EACCES:
-          explained = describe_eacces_file(p, path, flags);
-          if (explained != NULL) {
-            if (pr_fsio_lstat(prev_path, &st) == 0) {
-              explained = pstrcat(p, explained, "; parent directory '",
-                prev_path, "' has perms ", mode2s(p, st.st_mode),
-                ", and is owned by UID ", pr_uid2str(p, st.st_uid),
-                ", GID ", pr_gid2str(p, st.st_gid), NULL);
-            }
+      if (err_errno == EACCES) {
+        explained = describe_eacces_file(p, path, flags);
+        if (explained != NULL) {
+          if (pr_fsio_lstat(prev_path, &st) == 0) {
+            explained = pstrcat(p, explained, "; parent directory '",
+              prev_path, "' has perms ", mode2s(p, st.st_mode),
+              ", and is owned by UID ", pr_uid2str(p, st.st_uid),
+              ", GID ", pr_gid2str(p, st.st_gid), NULL);
           }
+        }
 
-          break;
-
-        default:
-          pr_trace_msg(trace_channel, 3,
-            "unexplained error [%s (%d)] for file '%s'",
-            strerror(xerrno), errno, path);
+      } else {
+        pr_trace_msg(trace_channel, 3,
+          "unexplained error [%s (%d)] for file '%s'",
+          strerror(xerrno), errno, path);
       }
     }
 
